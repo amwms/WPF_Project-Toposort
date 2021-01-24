@@ -1,4 +1,4 @@
-(* Topological sort *)
+(*  Topological Sorting  *)
 
 (* exeption if the graph given is not a DAG *)
 exception Cykliczne;;
@@ -56,39 +56,34 @@ let rec decode int_list a_list graph_map =
   | h :: t -> decode t ((PMap.find h graph_map) :: a_list) graph_map
 ;;
 
-let reset_array tab el =
-  for i = 0 to (Array.length tab) - 1 do
-    tab.(i) <- el;
-  done;
-  ();;
 
 let topol (graph_list : ('a * 'a list) list) =
+  (* map_decode -> map for "decoding" the graph with vertecies converted to int *)
+  (* map_code -> map for "coding" the given graph *)
+  (* n -> number of vertecies in the given graph *)
   let (map_decode, map_code, n) = convert_to_map graph_list PMap.empty PMap.empty 0 in
-  (* let n = num_of_vertecies graph_list 0 in *)
   let len = List.length graph_list in
   let q = Queue.create () in
   let vertecies_to_v = Array.make (n + 1) 0 in
   let answer = ref [] in
   let graph = Array.make (n + 1) [] in
 
-  reset_array vertecies_to_v 0;
-  reset_array graph [];
-
   convert graph_list map_code graph len;
 
-  (* setting the number of edges going into each vertex of the graph *)
+  (* counting the number of edges going into each vertex of the graph *)
   for i = 1 to n do
     List.iter (fun v ->
         vertecies_to_v.(v) <- vertecies_to_v.(v) + 1;
       ) graph.(i);
   done;
 
-  (* pushing vertecies with zero edges going into them onto queue *)
+  (* adding vertecies with zero edges going into them to the queue *)
   for i = 1 to n do
     if vertecies_to_v.(i) = 0 then
       Queue.push i q;
   done;
 
+  (* visiting all vertecies in topological order *)
   while not (Queue.is_empty q) do
     let w = Queue.take q in
     answer := w :: !answer;
